@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warwin-warungsmkwin</title>
+  
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        <i class="fas fa-utensils"></i>
+        <span>WarWIN</span>
+      </div>
+      <div class="nav-right" id="nav-right">
+        <!-- These elements will be shown only when logged in -->
+        <button id="logout-btn" class="logout-btn" style="display: none;">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+        <div class="history-icon" id="history-icon" title="Riwayat Transaksi" style="display: none;">
+          <i class="fas fa-history"></i>
+        </div>
+        <div class="cs-icon" id="cs-icon" title="Customer Service" style="display: none;">
+          <i class="fas fa-headset"></i>
+        </div>
+        <div class="cart-icon" id="cart-icon" title="Keranjang Belanja" style="display: none;">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Login Page -->
+    <div id="login-page" class="login-container">
+      <div class="login-box">
+        <h2 class="login-title">
+          <i class="fas fa-user-circle"></i>
+          <span>Selamat Datang</span>
+        </h2>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Masukkan username" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Masukkan password" required>
+          </div>
+          <button type="submit" class="login-btn">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Masuk</span>
+          </button>
+          <div class="form-footer">
+            <span>Belum punya akun? </span>
+            <span class="toggle-form" id="show-signup">Daftar disini</span>
+          </div>
+        </form>
+        
+        <form id="signup-form" style="display: none;">
+          <div class="form-group">
+            <label for="signup-username">Username</label>
+            <input type="text" id="signup-username" placeholder="Buat username" required>
+          </div>
+          <div class="form-group">
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" placeholder="Buat password" required>
+          </div>
+          <div class="form-group">
+            <label for="confirm-password">Konfirmasi Password</label>
+            <input type="password" id="confirm-password" placeholder="Ulangi password" required>
+          </div>
+          <button type="submit" class="login-btn">
+            <i class="fas fa-user-plus"></i>
+            <span>Daftar</span>
+          </button>
+          <div class="form-footer">
+            <span>Sudah punya akun? </span>
+            <span class="toggle-form" id="show-login">Login disini</span>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="main-view" style="display: none;">
+      <div class="main-content">
+        <div class="menu-container">
+          <!-- Quick Menu Icons -->
+          <div class="quick-menu">
+            <div class="quick-menu-item" id="quick-food">
+              <div class="quick-menu-icon">
+                <i class="fas fa-hamburger"></i>
+              </div>
+              <span class="quick-menu-label">Makanan</span>
+            </div>
+            <div class="quick-menu-item" id="quick-drink">
+              <div class="quick-menu-icon">
+                <i class="fas fa-coffee"></i>
+              </div>
+              <span class="quick-menu-label">Minuman</span>
+            </div>
+          </div>
+          
+          <div class="menu-section" id="food-section">
+            <h3 class="section-title">
+              <i class="fas fa-hamburger"></i>
+              <span>Makanan</span>
+            </h3>
+            <div class="menu-grid" id="food-menu">
+              <!-- Food items will be inserted here -->
+              <div class="menu-card" data-id="m1">
+                <img src="foto/dimsum.jpg" alt="Dimsum" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Dimsum</h4>
+                  <div class="menu-price">Rp15.000</div>
+                  <button class="add-btn" data-id="m1">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="menu-card" data-id="m2">
+                <img src="foto/mieayam.jpg" alt="Mie Ayam" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Mie Ayam</h4>
+                  <div class="menu-price">Rp12.000</div>
+                  <button class="add-btn" data-id="m2">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="menu-card" data-id="m3">
+                <img src="foto/bakso.jpg" alt="Bakso" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Bakso</h4>
+                  <div class="menu-price">Rp10.000</div>
+                  <button class="add-btn" data-id="m3">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="menu-card" data-id="m4">
+                <img src="foto/sate.jpg" alt="Sate Ayam" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Sate Ayam</h4>
+                  <div class="menu-price">Rp18.000</div>
+                  <button class="add-btn" data-id="m4">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="menu-card" data-id="m5">
+                <img src="foto/ayam.jpg" alt="Ayam Goreng" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Ayam Goreng</h4>
+                  <div class="menu-price">Rp20.000</div>
+                  <button class="add-btn" data-id="m5">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="menu-card" data-id="m6">
+                <img src="foto/cireng.jpg" alt="Cireng Aef" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Cireng Aef</h4>
+                  <div class="menu-price">Rp2.000</div>
+                  <button class="add-btn" data-id="m6">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="menu-section" id="drink-section">
+            <h3 class="section-title">
+              <i class="fas fa-coffee"></i>
+              <span>Minuman</span>
+            </h3>
+            <div class="menu-grid" id="drink-menu">
+              <!-- Drink items will be inserted here -->
+              <div class="menu-card" data-id="d1">
+                <img src="foto/Teh.jpg" alt="Teh" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Teh</h4>
+                  <div class="menu-price">Rp5.000</div>
+                  <button class="add-btn" data-id="d1">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="menu-card" data-id="d2">
+                <img src="foto/jeruk.jpg" alt="Es Jeruk" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Es Jeruk</h4>
+                  <div class="menu-price">Rp7.000</div>
+                  <button class="add-btn" data-id="d2">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="menu-card" data-id="d3">
+                <img src="foto/kopi.jpg" alt="Kopi" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Kopi</h4>
+                  <div class="menu-price">Rp8.000</div>
+                  <button class="add-btn" data-id="d3">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="menu-card" data-id="d4">
+                <img src="foto/boba.jpg" alt="Boba" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Boba</h4>
+                  <div class="menu-price">Rp12.000</div>
+                  <button class="add-btn" data-id="d4">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="menu-card" data-id="d5">
+                <img src="foto/cingcau.jpg" alt="Es Cincau" class="menu-img">
+                <div class="menu-details">
+                  <h4 class="menu-name">Es Cincau</h4>
+                  <div class="menu-price">Rp10.000</div>
+                  <button class="add-btn" data-id="d5">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Tambahkan ke Keranjang</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Cart Sidebar -->
+        <div class="cart-sidebar" id="cart-sidebar">
+          <div class="cart-header">
+            <h3 class="cart-title">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Keranjang Belanja</span>
+            </h3>
+            <button class="close-cart" id="close-cart">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="cart-items" id="cart-items">
+            <!-- Cart items will be inserted here -->
+          </div>
+          
+          <div class="cart-total">
+            Total: <span id="cart-total">Rp0</span>
+          </div>
+          
+          <div class="payment-section">
+            <h4 class="payment-title">
+              <i class="fas fa-money-bill-wave"></i>
+              <span>Pembayaran</span>
+            </h4>
+            <div class="payment-methods">
+              <div class="payment-method">
+                <input type="radio" id="cod" name="payment" value="cod" checked>
+                <label for="cod">COD (Bayar di Tempat)</label>
+              </div>
+              <div class="payment-method">
+                <input type="radio" id="qris" name="payment" value="qris">
+                <label for="qris">QRIS</label>
+              </div>
+            </div>
+            
+            <!-- QRIS Payment Section -->
+            <div class="qris-payment" id="qris-payment">
+              <p class="qris-instruction">
+                Silakan scan QR code berikut untuk melakukan pembayaran, kemudian upload bukti pembayaran Anda.
+              </p>
+              
+              <div class="qris-template">
+                <img src="foto/qris.png" alt="QRIS Payment">
+                <p>TRANSFER KESINI</p>
+              </div>
+              
+              <div class="upload-section">
+                <label class="upload-label">Upload Bukti Pembayaran:</label>
+                <input type="file" id="payment-proof" accept="image/*" style="display: none;">
+                <button class="upload-btn" id="upload-btn">
+                  <i class="fas fa-upload"></i>
+                  <span>Pilih File</span>
+                </button>
+                <img id="preview-image" class="preview-image">
+              </div>
+            </div>
+            
+            <div class="customer-details">
+              <label for="customer-name">Nama Pelanggan</label>
+              <input type="text" id="customer-name" placeholder="Nama lengkap" required>
+              
+              <label for="customer-address">Alamat Pengiriman</label>
+              <textarea id="customer-address" placeholder="Alamat lengkap" required></textarea>
+            </div>
+          </div>
+          
+          <button class="checkout-btn" id="checkout-btn">
+            <i class="fas fa-credit-card"></i>
+            <span>Checkout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Order History Sidebar -->
+    <div class="history-overlay" id="history-overlay"></div>
+    <div class="history-sidebar" id="history-sidebar">
+      <div class="history-header">
+        <h3 class="history-title">
+          <i class="fas fa-history"></i>
+          <span>Riwayat Transaksi</span>
+        </h3>
+        <button class="close-history" id="close-history">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="history-items" id="history-items">
+        <!-- History items will be inserted here -->
+      </div>
+    </div>
+    
+    <!-- Admin Panel -->
+    <div id="admin-view" style="display: none;">
+      <div class="admin-panel">
+        <div class="admin-section">
+          <h3 class="admin-title">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Kelola Pesanan</span>
+          </h3>
+          
+          <div class="order-tabs">
+            <button class="tab-btn active" data-status="processing">Sedang Disiapkan</button>
+            <button class="tab-btn" data-status="delivering">Sedang Diantar</button>
+            <button class="tab-btn" data-status="completed">Selesai</button>
+          </div>
+          
+          <div class="order-list" id="order-list">
+            <!-- Orders will be inserted here -->
+          </div>
+        </div>
+        
+        <!-- Admin Chat Section -->
+        <div class="admin-section">
+          <h3 class="admin-title">
+            <i class="fas fa-headset"></i>
+            <span>Chat Pelanggan</span>
+          </h3>
+          
+          <div class="admin-chat-container" id="admin-chat-container">
+            <!-- Chat messages will be inserted here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Service Chat -->
+    <div class="cs-chat" id="cs-chat">
+      <div class="cs-header" id="cs-header">
+        <div class="cs-title">
+          <i class="fas fa-headset"></i>
+          <span>Customer Service</span>
+        </div>
+        <button class="cs-close" id="cs-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="cs-messages" id="cs-messages">
+        <div class="message admin">
+          Halo! Ada yang bisa kami bantu?
+        </div>
+      </div>
+      <div class="cs-input">
+        <input type="text" id="cs-input-text" placeholder="Ketik pesan Anda...">
+        <button id="cs-send-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab" id="fab">
+      <i class="fas fa-headset"></i>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
