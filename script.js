@@ -1,14 +1,17 @@
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
     // Konfigurasi Firebase - Ganti dengan konfigurasi Anda
+    
     const firebaseConfig = {
-      apiKey: "AIzaSyABC123XYZ456DEF789GHI",
-      authDomain: "warwin-app.firebaseapp.com",
-      databaseURL: "https://warwin-app-default-rtdb.firebaseio.com",
-      projectId: "warwin-app",
-      storageBucket: "warwin-app.appspot.com",
-      messagingSenderId: "123456789012",
-      appId: "1:123456789012:web:abcdef1234567890"
-    };
+  apiKey: "AIzaSyBD_dUbmmsKBiESA7loz9Ki_syNlCG1X4M",
+  authDomain: "warwin-2c8d3.firebaseapp.com",
+  projectId: "warwin-2c8d3",
+  storageBucket: "warwin-2c8d3.firebasestorage.app",
+  messagingSenderId: "576526108191",
+  appId: "1:576526108191:web:fb1a23f5d30b6fc022f72a",
+  measurementId: "G-ES0YD36NJ8"
+};
+
 
     // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
