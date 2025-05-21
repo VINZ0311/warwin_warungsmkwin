@@ -1,16 +1,13 @@
 
     // Konfigurasi Firebase - Ganti dengan konfigurasi Anda
-    
-    
-    // Konfigurasi Firebase - Ganti dengan konfigurasi Anda
     const firebaseConfig = {
       apiKey: "AIzaSyBD_dUbmmsKBiESA7loz9Ki_syNlCG1X4M",
       authDomain: "warwin-2c8d3.firebaseapp.com",
-      databaseURL: "https://firebase.google.com/docs/web/setup#available-libraries,
+      databaseURL: "https://warwin-2c8d3-default-rtdb.firebaseio.com",
       projectId: "warwin-2c8d3",
       storageBucket: "warwin-2c8d3.firebasestorage.app",
       messagingSenderId: "576526108191",
-      appId: "1:576526108191:web:2d42a6548e32ac0f22f72a"
+      appId: "1:576526108191:web:2d42a6548e32ac0f22f72a",
     };
 
     // Inisialisasi Firebase
