@@ -1,5 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
     // Konfigurasi Firebase - Ganti dengan konfigurasi Anda
     
     const firebaseConfig = {
