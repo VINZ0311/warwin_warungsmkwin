@@ -7,7 +7,7 @@
       projectId: "warwin-2c8d3",
       storageBucket: "warwin-2c8d3.firebasestorage.app",
       messagingSenderId: "576526108191",
-      appId: "1:576526108191:web:2d42a6548e32ac0f22f72a",
+      appId: "1:576526108191:web:2d42a6548e32ac0f22f72a"
     };
 
     // Inisialisasi Firebase
