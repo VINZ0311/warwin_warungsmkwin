@@ -1,4 +1,19 @@
 
+    // Konfigurasi Firebase - Ganti dengan konfigurasi Anda
+    const firebaseConfig = {
+      apiKey: "AIzaSyABC123XYZ456DEF789GHI",
+      authDomain: "warwin-app.firebaseapp.com",
+      databaseURL: "https://warwin-app-default-rtdb.firebaseio.com",
+      projectId: "warwin-app",
+      storageBucket: "warwin-app.appspot.com",
+      messagingSenderId: "123456789012",
+      appId: "1:123456789012:web:abcdef1234567890"
+    };
+
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     // Sample menu data
     const menuData = {
       makanan: [
@@ -44,7 +59,7 @@
     const cartSidebar = document.getElementById('cart-sidebar');
     const closeCartBtn = document.getElementById('close-cart');
     const historySidebar = document.getElementById('history-sidebar');
-        const historyOverlay = document.getElementById('history-overlay');
+    const historyOverlay = document.getElementById('history-overlay');
     const closeHistoryBtn = document.getElementById('close-history');
     const cartItems = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
@@ -303,19 +318,93 @@
       });
     }
 
-    // Load chats from localStorage
+    // Load users from Firebase
+    function loadUsers() {
+      database.ref('users').once('value')
+        .then(snapshot => {
+          users = snapshot.val() || [];
+          // Default users if empty
+          if (users.length === 0) {
+            users = [
+              { username: 'user1', password: 'user123' },
+              { username: 'user2', password: 'user123' }
+            ];
+            saveUsers();
+          }
+        })
+        .catch(error => console.error('Error loading users:', error));
+    }
+
+    // Save users to Firebase
+    function saveUsers() {
+      database.ref('users').set(users)
+        .then(() => console.log('Users saved to Firebase'))
+        .catch(error => console.error('Error saving users:', error));
+    }
+
+    // Load orders from Firebase with realtime updates
+    function loadOrders() {
+      database.ref('orders').on('value', snapshot => {
+        orders = snapshot.val() || [];
+        // If admin, render orders
+        if (currentUser?.isAdmin) {
+          renderAdminOrders('processing');
+        }
+        // If history sidebar is open, render history
+        if (historySidebar.classList.contains('open')) {
+          renderHistoryItems();
+        }
+      });
+    }
+
+    // Save orders to Firebase
+    function saveOrders() {
+      database.ref('orders').set(orders)
+        .then(() => console.log('Orders saved to Firebase'))
+        .catch(error => console.error('Error saving orders:', error));
+    }
+
+    // Load chats from Firebase with realtime updates
     function loadChats() {
-      const savedChats = localStorage.getItem('chats');
-      if (savedChats) {
-        chats = JSON.parse(savedChats);
-      } else {
-        chats = {};
+      database.ref('chats').on('value', snapshot => {
+        chats = snapshot.val() || {};
+        // If CS chat is open, update chat
+        if (csChatOpen) {
+          if (currentUser.isAdmin) {
+            renderAdminChats();
+          } else {
+            loadUserChat();
+          }
+        }
+      });
+    }
+
+    // Save chats to Firebase
+    function saveChats() {
+      database.ref('chats').set(chats)
+        .then(() => console.log('Chats saved to Firebase'))
+        .catch(error => console.error('Error saving chats:', error));
+    }
+
+    // Load cart from Firebase
+    function loadCart() {
+      if (currentUser) {
+        database.ref(`carts/${currentUser.username}`).once('value')
+          .then(snapshot => {
+            cart = snapshot.val() || [];
+            renderCartItems();
+          })
+          .catch(error => console.error('Error loading cart:', error));
       }
     }
 
-    // Save chats to localStorage
-    function saveChats() {
-      localStorage.setItem('chats', JSON.stringify(chats));
+    // Save cart to Firebase
+    function saveCart() {
+      if (currentUser) {
+        database.ref(`carts/${currentUser.username}`).set(cart)
+          .then(() => console.log('Cart saved to Firebase'))
+          .catch(error => console.error('Error saving cart:', error));
+      }
     }
 
     // Toggle customer service chat
@@ -584,26 +673,6 @@
       }, 300);
     }
 
-    // Load users from localStorage
-    function loadUsers() {
-      const savedUsers = localStorage.getItem('users');
-      if (savedUsers) {
-        users = JSON.parse(savedUsers);
-      } else {
-        // Default users
-        users = [
-          { username: 'user1', password: 'user123' },
-          { username: 'user2', password: 'user123' }
-        ];
-        saveUsers();
-      }
-    }
-
-    // Save users to localStorage
-    function saveUsers() {
-      localStorage.setItem('users', JSON.stringify(users));
-    }
-
     // Login success
     function loginSuccess() {
       localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -628,6 +697,17 @@
         adminView.style.display = 'block';
         renderAdminOrders('processing');
         renderAdminChats();
+        
+        // Set up realtime listeners for admin
+        database.ref('orders').on('value', snapshot => {
+          orders = snapshot.val() || [];
+          renderAdminOrders('processing');
+        });
+        
+        database.ref('chats').on('value', snapshot => {
+          chats = snapshot.val() || {};
+          renderAdminChats();
+        });
       } else {
         mainView.style.display = 'block';
         adminView.style.display = 'none';
@@ -703,24 +783,6 @@
           btn.innerHTML = `<i class="fas fa-cart-plus"></i> <span>Tambahkan ke Keranjang</span>`;
           btn.style.backgroundColor = 'var(--primary)';
         }, 1000);
-      }
-    }
-
-    // Save cart to localStorage
-    function saveCart() {
-      if (currentUser) {
-        localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
-      }
-    }
-
-    // Load cart from localStorage
-    function loadCart() {
-      if (currentUser) {
-        const savedCart = localStorage.getItem(`cart_${currentUser.username}`);
-        if (savedCart) {
-          cart = JSON.parse(savedCart);
-          renderCartItems();
-        }
       }
     }
 
@@ -925,19 +987,6 @@
       return 'ORD-' + Date.now().toString().slice(-6);
     }
 
-    // Save orders to localStorage
-    function saveOrders() {
-      localStorage.setItem('orders', JSON.stringify(orders));
-    }
-
-    // Load orders
-    function loadOrders() {
-      const savedOrders = localStorage.getItem('orders');
-      if (savedOrders) {
-        orders = JSON.parse(savedOrders);
-      }
-    }
-
     // Render history items
     function renderHistoryItems() {
       // Filter orders for current user (if not admin)
@@ -1107,4 +1156,3 @@
 
     // Initialize the app
     init();
-  
