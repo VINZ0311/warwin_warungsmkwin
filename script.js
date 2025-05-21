@@ -17,7 +17,7 @@
         { id: 'd5', name: 'Es Cincau', price: 10000 }
       ]
     };
-    
+
     // App state
     let currentUser = null;
     let cart = [];
@@ -26,8 +26,8 @@
     let paymentProof = null;
     let csChatOpen = false;
     let chats = {}; // Store chats by username
-    let adminChats = {}; // Store admin view of chats
-    
+    let activeChatUser = null; // Track which user admin is chatting with
+
     // DOM elements
     const loginPage = document.getElementById('login-page');
     const mainView = document.getElementById('main-view');
@@ -44,7 +44,7 @@
     const cartSidebar = document.getElementById('cart-sidebar');
     const closeCartBtn = document.getElementById('close-cart');
     const historySidebar = document.getElementById('history-sidebar');
-    const historyOverlay = document.getElementById('history-overlay');
+        const historyOverlay = document.getElementById('history-overlay');
     const closeHistoryBtn = document.getElementById('close-history');
     const cartItems = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
@@ -70,8 +70,16 @@
     const foodSection = document.getElementById('food-section');
     const drinkSection = document.getElementById('drink-section');
     const adminChatContainer = document.getElementById('admin-chat-container');
+    const chatUserList = document.getElementById('chat-user-list');
+    const activeChat = document.getElementById('active-chat');
+    const adminChatMessages = document.getElementById('admin-chat-messages');
+    const adminChatInput = document.getElementById('admin-chat-input');
+    const adminSendBtn = document.getElementById('admin-send-btn');
+    const searchChatUser = document.getElementById('search-chat-user');
+    const activeChatUsername = document.getElementById('active-chat-username');
+    const activeChatStatus = document.getElementById('active-chat-status');
     const navRight = document.getElementById('nav-right');
-    
+
     // Initialize app
     function init() {
       setupEventListeners();
@@ -118,7 +126,7 @@
         paymentProofInput.click();
       });
     }
-    
+
     // Setup event listeners
     function setupEventListeners() {
       // Form toggles
@@ -212,6 +220,29 @@
         }
       });
       
+      // Admin chat send message
+      adminSendBtn.addEventListener('click', sendAdminMessage);
+      adminChatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          sendAdminMessage();
+        }
+      });
+      
+      // Search chat users
+      searchChatUser.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const userElements = document.querySelectorAll('.chat-user');
+        
+        userElements.forEach(user => {
+          const username = user.querySelector('.chat-user-name').textContent.toLowerCase();
+          if (username.includes(searchTerm)) {
+            user.style.display = 'flex';
+          } else {
+            user.style.display = 'none';
+          }
+        });
+      });
+      
       // Quick menu navigation
       quickFood.addEventListener('click', () => {
         foodSection.scrollIntoView({ behavior: 'smooth' });
@@ -261,9 +292,17 @@
           
           updateOrderStatus(orderId, action);
         }
+        
+        // Admin chat user selection
+        if (e.target.closest('.chat-user')) {
+          const userElement = e.target.closest('.chat-user');
+          const username = userElement.querySelector('.chat-user-name').textContent;
+          selectChatUser(username);
+          renderAdminChatMessages(username);
+        }
       });
     }
-    
+
     // Load chats from localStorage
     function loadChats() {
       const savedChats = localStorage.getItem('chats');
@@ -272,60 +311,197 @@
       } else {
         chats = {};
       }
-      
-      const savedAdminChats = localStorage.getItem('adminChats');
-      if (savedAdminChats) {
-        adminChats = JSON.parse(savedAdminChats);
-      } else {
-        adminChats = {};
-      }
     }
-    
+
     // Save chats to localStorage
     function saveChats() {
       localStorage.setItem('chats', JSON.stringify(chats));
-      localStorage.setItem('adminChats', JSON.stringify(adminChats));
     }
-    
+
     // Toggle customer service chat
     function toggleCsChat() {
       csChatOpen = !csChatOpen;
       if (csChatOpen) {
         csChat.classList.add('open');
         fab.style.display = 'none';
-        loadUserChat();
+        if (currentUser.isAdmin) {
+          renderAdminChats();
+        } else {
+          loadUserChat();
+        }
       } else {
         csChat.classList.remove('open');
         fab.style.display = 'flex';
+        activeChatUser = null;
       }
     }
-    
+
     // Load user chat messages
     function loadUserChat() {
       if (!currentUser) return;
       
       csMessages.innerHTML = '';
       
-      // Add welcome message if no chat history
-      if (!chats[currentUser.username] || chats[currentUser.username].length === 0) {
-        const welcomeMsg = document.createElement('div');
-        welcomeMsg.className = 'message admin';
-        welcomeMsg.textContent = 'Halo! Ada yang bisa kami bantu?';
-        csMessages.appendChild(welcomeMsg);
-      } else {
-        // Display existing chat messages
-        chats[currentUser.username].forEach(msg => {
-          const msgElement = document.createElement('div');
-          msgElement.className = `message ${msg.sender}`;
-          msgElement.textContent = msg.text;
-          csMessages.appendChild(msgElement);
-        });
+      // Initialize chat if it doesn't exist
+      if (!chats[currentUser.username]) {
+        chats[currentUser.username] = [{
+          sender: 'admin',
+          text: 'Halo! Ada yang bisa kami bantu?',
+          timestamp: new Date().toISOString()
+        }];
+        saveChats();
       }
+      
+      // Display existing chat messages
+      chats[currentUser.username].forEach(msg => {
+        const msgElement = document.createElement('div');
+        msgElement.className = `message ${msg.sender}`;
+        msgElement.textContent = msg.text;
+        csMessages.appendChild(msgElement);
+      });
       
       // Scroll to bottom
       csMessages.scrollTop = csMessages.scrollHeight;
     }
-    
+
+    // Render admin chat interface with user list
+    function renderAdminChats() {
+      if (!currentUser.isAdmin) return;
+      
+      chatUserList.innerHTML = '';
+      
+      // Get all users who have chatted
+      const chatUsers = Object.keys(chats).filter(u => chats[u].length > 0);
+      
+      if (chatUsers.length === 0) {
+        chatUserList.innerHTML = '<div class="empty-state">Belum ada pesan dari pelanggan</div>';
+        adminChatMessages.innerHTML = `
+          <div class="no-chat-selected">
+            <i class="fas fa-comment-alt"></i>
+            <p>Pilih pelanggan untuk memulai chat</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Display list of users
+      chatUsers.forEach(username => {
+        const lastMessage = chats[username][chats[username].length - 1];
+        const userDiv = document.createElement('div');
+        userDiv.className = `chat-user ${activeChatUser === username ? 'active' : ''}`;
+        userDiv.innerHTML = `
+          <div class="chat-user-avatar">${username.charAt(0).toUpperCase()}</div>
+          <div class="chat-user-info">
+            <div class="chat-user-name">${username}</div>
+            <div class="chat-user-lastmsg">${lastMessage.text}</div>
+          </div>
+          <div class="chat-user-time">${formatTime(lastMessage.timestamp)}</div>
+        `;
+        chatUserList.appendChild(userDiv);
+      });
+      
+      // If there's an active chat user, render their messages
+      if (activeChatUser) {
+        renderAdminChatMessages(activeChatUser);
+      }
+    }
+
+    // Select a chat user in admin panel
+    function selectChatUser(username) {
+      activeChatUser = username;
+      activeChatUsername.textContent = username;
+      activeChatStatus.textContent = 'Online';
+      activeChatStatus.style.color = 'var(--success)';
+      
+      // Highlight selected user
+      document.querySelectorAll('.chat-user').forEach(user => {
+        user.classList.remove('active');
+        if (user.querySelector('.chat-user-name').textContent === username) {
+          user.classList.add('active');
+        }
+      });
+    }
+
+    // Render messages for a specific user in admin view
+    function renderAdminChatMessages(username) {
+      if (!currentUser.isAdmin || !username) return;
+      
+      adminChatMessages.innerHTML = '';
+      
+      // Display messages
+      chats[username].forEach(msg => {
+        const msgElement = document.createElement('div');
+        msgElement.className = `chat-message ${msg.sender === 'admin' ? 'admin' : 'user'}`;
+        msgElement.innerHTML = `
+          <div>${msg.text}</div>
+          <div class="chat-message-time">${formatTime(msg.timestamp)}</div>
+        `;
+        adminChatMessages.appendChild(msgElement);
+      });
+      
+      // Scroll to bottom
+      adminChatMessages.scrollTop = adminChatMessages.scrollHeight;
+      
+      // Hide "no chat selected" message
+      document.querySelector('.no-chat-selected')?.remove();
+    }
+
+    // Format timestamp to readable time
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Send admin reply to user
+    function sendAdminMessage() {
+      const message = adminChatInput.value.trim();
+      if (message && activeChatUser) {
+        const newMsg = {
+          sender: 'admin',
+          text: message,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Add to user's chat
+        chats[activeChatUser].push(newMsg);
+        saveChats();
+        
+        // Display message
+        const msgElement = document.createElement('div');
+        msgElement.className = 'chat-message admin';
+        msgElement.innerHTML = `
+          <div>${message}</div>
+          <div class="chat-message-time">${formatTime(newMsg.timestamp)}</div>
+        `;
+        adminChatMessages.appendChild(msgElement);
+        
+        // Clear input
+        adminChatInput.value = '';
+        adminChatMessages.scrollTop = adminChatMessages.scrollHeight;
+        
+        // Update last message in user list
+        updateUserLastMessage(activeChatUser, message);
+        
+        // If the user is currently viewing the chat, update their view
+        if (currentUser && currentUser.username === activeChatUser && csChatOpen) {
+          loadUserChat();
+        }
+      }
+    }
+
+    // Update last message in user list
+    function updateUserLastMessage(username, message) {
+      const userElements = document.querySelectorAll('.chat-user');
+      userElements.forEach(user => {
+        if (user.querySelector('.chat-user-name').textContent === username) {
+          const lastMsgElement = user.querySelector('.chat-user-lastmsg');
+          lastMsgElement.textContent = message;
+          const timeElement = user.querySelector('.chat-user-time');
+          timeElement.textContent = formatTime(new Date().toISOString());
+        }
+      });
+    }
+
     // Send customer service message
     function sendCsMessage() {
       const message = csInputText.value.trim();
@@ -344,14 +520,6 @@
         
         // Add message to user's chat
         chats[currentUser.username].push(userMsg);
-        
-        // Also add to admin's view
-        if (!adminChats[currentUser.username]) {
-          adminChats[currentUser.username] = [];
-        }
-        adminChats[currentUser.username].push(userMsg);
-        
-        // Save chats
         saveChats();
         
         // Display user message
@@ -362,44 +530,18 @@
         
         // Clear input
         csInputText.value = '';
-        
-        // Simulate admin reply after delay
-        setTimeout(() => {
-          const adminReply = {
-            sender: 'admin',
-            text: 'Terima kasih atas pesan Anda. Kami akan segera merespons.',
-            timestamp: new Date().toISOString()
-          };
-          
-          // Add to user's chat
-          chats[currentUser.username].push(adminReply);
-          
-          // Add to admin's view
-          adminChats[currentUser.username].push(adminReply);
-          
-          // Save chats
-          saveChats();
-          
-          // Display admin reply
-          const adminMsgElement = document.createElement('div');
-          adminMsgElement.className = 'message admin';
-          adminMsgElement.textContent = adminReply.text;
-          csMessages.appendChild(adminMsgElement);
-          
-          // Scroll to bottom
-          csMessages.scrollTop = csMessages.scrollHeight;
-          
-          // Update admin view if admin is logged in
-          if (currentUser.isAdmin) {
-            renderAdminChats();
-          }
-        }, 1000);
-        
-        // Scroll to bottom
         csMessages.scrollTop = csMessages.scrollHeight;
+        
+        // If admin is viewing this chat, update their view
+        if (currentUser.isAdmin && activeChatUser === currentUser.username) {
+          renderAdminChatMessages(activeChatUser);
+        } else if (currentUser.isAdmin) {
+          // Update user list if admin is not currently viewing this chat
+          updateUserLastMessage(currentUser.username, message);
+        }
       }
     }
-    
+
     // Show notification function
     function showNotification(message, type = 'info', duration = 3000) {
       const container = document.getElementById('notification-container');
@@ -434,14 +576,14 @@
       
       return notification;
     }
-    
+
     function closeNotification(notification) {
       notification.classList.remove('show');
       setTimeout(() => {
         notification.remove();
       }, 300);
     }
-    
+
     // Load users from localStorage
     function loadUsers() {
       const savedUsers = localStorage.getItem('users');
@@ -456,12 +598,12 @@
         saveUsers();
       }
     }
-    
+
     // Save users to localStorage
     function saveUsers() {
       localStorage.setItem('users', JSON.stringify(users));
     }
-    
+
     // Login success
     function loginSuccess() {
       localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -471,8 +613,14 @@
       if (currentUser) {
         logoutBtn.style.display = 'flex';
         historyIcon.style.display = 'flex';
-        csIcon.style.display = 'flex';
         cartIcon.style.display = 'flex';
+        
+        // Only show CS icon for non-admin users
+        if (!currentUser.isAdmin) {
+          csIcon.style.display = 'flex';
+        } else {
+          csIcon.style.display = 'none';
+        }
       }
       
       if (currentUser.isAdmin) {
@@ -492,7 +640,7 @@
         }
       }
     }
-    
+
     // Logout
     function logout() {
       currentUser = null;
@@ -517,7 +665,7 @@
       
       showNotification('Anda telah logout', 'info');
     }
-    
+
     // Add item to cart
     function addToCart(id) {
       // Find item in menu
@@ -557,14 +705,14 @@
         }, 1000);
       }
     }
-    
+
     // Save cart to localStorage
     function saveCart() {
       if (currentUser) {
         localStorage.setItem(`cart_${currentUser.username}`, JSON.stringify(cart));
       }
     }
-    
+
     // Load cart from localStorage
     function loadCart() {
       if (currentUser) {
@@ -575,7 +723,7 @@
         }
       }
     }
-    
+
     // Update cart count
     function updateCartCount() {
       const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
@@ -589,7 +737,7 @@
         }, 300);
       }
     }
-    
+
     // Render cart items
     function renderCartItems() {
       if (cart.length === 0) {
@@ -649,7 +797,7 @@
         });
       });
     }
-    
+
     // Increase quantity
     function increaseQuantity(id) {
       const item = cart.find(i => i.id === id);
@@ -661,7 +809,7 @@
         showNotification(`Jumlah ${item.name} ditambah`, 'info', 1500);
       }
     }
-    
+
     // Decrease quantity
     function decreaseQuantity(id) {
       const item = cart.find(i => i.id === id);
@@ -673,7 +821,7 @@
         showNotification(`Jumlah ${item.name} dikurangi`, 'info', 1500);
       }
     }
-    
+
     // Remove from cart
     function removeFromCart(id) {
       const item = cart.find(i => i.id === id);
@@ -685,30 +833,30 @@
         showNotification(`${item.name} dihapus dari keranjang`, 'warning', 2000);
       }
     }
-    
+
     // Open cart
     function openCart() {
       cartSidebar.classList.add('open');
     }
-    
+
     // Close cart
     function closeCart() {
       cartSidebar.classList.remove('open');
     }
-    
+
     // Open history
     function openHistory() {
       renderHistoryItems();
       historySidebar.classList.add('open');
       historyOverlay.classList.add('open');
     }
-    
+
     // Close history
     function closeHistory() {
       historySidebar.classList.remove('open');
       historyOverlay.classList.remove('open');
     }
-    
+
     // Checkout
     function checkout() {
       if (cart.length === 0) {
@@ -733,6 +881,7 @@
         id: generateOrderId(),
         date: new Date().toLocaleString(),
         customer: customerName.value,
+        customerUsername: currentUser.username, // Store username for admin reference
         address: customerAddress.value,
         items: [...cart],
         total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
@@ -770,17 +919,17 @@
       closeCart();
       renderHistoryItems();
     }
-    
+
     // Generate order ID
     function generateOrderId() {
       return 'ORD-' + Date.now().toString().slice(-6);
     }
-    
+
     // Save orders to localStorage
     function saveOrders() {
       localStorage.setItem('orders', JSON.stringify(orders));
     }
-    
+
     // Load orders
     function loadOrders() {
       const savedOrders = localStorage.getItem('orders');
@@ -788,14 +937,14 @@
         orders = JSON.parse(savedOrders);
       }
     }
-    
+
     // Render history items
     function renderHistoryItems() {
       // Filter orders for current user (if not admin)
       let userOrders = [...orders];
       if (!currentUser?.isAdmin) {
         userOrders = orders.filter(order => 
-          order.customer.toLowerCase() === currentUser?.username?.toLowerCase()
+          order.customerUsername === currentUser?.username
         );
       }
       
@@ -831,15 +980,10 @@
           <div class="history-order-total">
             Total: Rp${order.total.toLocaleString()}
           </div>
-          ${order.paymentMethod === 'qris' ? `
-          <div class="payment-info">
-            <small>Metode Pembayaran: QRIS</small>
-          </div>
-          ` : ''}
         </div>
       `).join('');
     }
-    
+
     // Get status class for styling
     function getStatusClass(status) {
       switch(status) {
@@ -849,7 +993,7 @@
         default: return '';
       }
     }
-    
+
     // Render admin orders
     function renderAdminOrders(status) {
       const filteredOrders = orders.filter(order => order.status === status);
@@ -868,7 +1012,7 @@
         <div class="order-card fade-in">
           <div class="order-header">
             <div>
-              <span class="order-customer">${order.customer}</span>
+              <span class="order-customer">${order.customer} (${order.customerUsername})</span>
               <div class="order-date">#${order.id} • ${order.date}</div>
             </div>
             <span class="history-order-status ${getStatusClass(order.status)}">
@@ -920,7 +1064,7 @@
         </div>
       `).join('');
     }
-    
+
     // Update order status
     function updateOrderStatus(orderId, action) {
       const order = orders.find(o => o.id === orderId);
@@ -954,7 +1098,13 @@
       
       // Show notification
       showNotification(notificationMsg, 'success');
+      
+      // Update history view if open
+      if (historySidebar.classList.contains('open')) {
+        renderHistoryItems();
+      }
     }
 
     // Initialize the app
     init();
+  
