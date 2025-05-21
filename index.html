@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,7 +8,6 @@
   
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
 </head>
 <body>
   <div id="app">
@@ -371,7 +371,7 @@
           </div>
         </div>
         
-        <!-- Admin Chat Section -->
+        <!-- Admin Chat Section - WhatsApp-like -->
         <div class="admin-section">
           <h3 class="admin-title">
             <i class="fas fa-headset"></i>
@@ -379,7 +379,32 @@
           </h3>
           
           <div class="admin-chat-container" id="admin-chat-container">
-            <!-- Chat messages will be inserted here -->
+            <div class="chat-user-list-container">
+              <div class="search-chat-user">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-chat-user" placeholder="Cari pelanggan...">
+              </div>
+              <div class="chat-user-list" id="chat-user-list"></div>
+            </div>
+            
+            <div class="active-chat" id="active-chat">
+              <div class="active-chat-header">
+                <h4 id="active-chat-username">Pilih pelanggan</h4>
+                <div class="active-chat-status" id="active-chat-status"></div>
+              </div>
+              <div class="chat-messages-container">
+                <div class="chat-messages" id="admin-chat-messages">
+                  <div class="no-chat-selected">
+                    <i class="fas fa-comment-alt"></i>
+                    <p>Pilih pelanggan untuk memulai chat</p>
+                  </div>
+                </div>
+              </div>
+              <div class="chat-input-container">
+                <input type="text" id="admin-chat-input" placeholder="Ketik balasan...">
+                <button id="admin-send-btn"><i class="fas fa-paper-plane"></i></button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -397,9 +422,7 @@
         </button>
       </div>
       <div class="cs-messages" id="cs-messages">
-        <div class="message admin">
-          Halo! Ada yang bisa kami bantu?
-        </div>
+        <!-- Messages will be inserted here -->
       </div>
       <div class="cs-input">
         <input type="text" id="cs-input-text" placeholder="Ketik pesan Anda...">
@@ -417,6 +440,6 @@
     <!-- Notification Container -->
     <div id="notification-container"></div>
   </div>
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
-</html>
+        </html>
